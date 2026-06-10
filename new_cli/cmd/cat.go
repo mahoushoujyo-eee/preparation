@@ -12,14 +12,22 @@ import (
 
 // catCmd represents the cat command
 var catCmd = &cobra.Command{
-	Use:   "cat",
-	Short: "use 'cat <file>' to stdout your file's content ",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "cat <file>",
+	Short: "Print the contents of a file to standard output.",
+	Long: `cat reads the file given as the first argument and writes its contents,
+line by line, to standard output. It is a minimal re-implementation of the
+classic Unix "cat" command, intended for learning purposes.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Behaviour:
+  - Exactly one positional argument is required: the path to the file.
+  - The file is read with a buffered scanner; each line is printed as-is
+    followed by a newline.
+  - If the file cannot be opened, or a read error occurs mid-stream, the
+    program reports the error and exits with a non-zero status.
+
+Examples:
+  newcli cat ./test.txt
+  newcli cat /etc/hosts`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := tool.Cat(args)
 		if err != nil {

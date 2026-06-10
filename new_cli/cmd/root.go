@@ -12,13 +12,20 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "newcli",
-	Short: "one simple cli tool for ones's study, support cat grep",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "A small learning-purpose CLI that re-implements basic Unix tools (cat, grep) in Go.",
+	Long: `newcli is a minimal command-line toolkit written in Go with the Cobra framework.
+It is built as a study project to practice CLI design, file I/O and subcommand
+organization by re-implementing a couple of classic Unix utilities.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Currently supported subcommands:
+  cat   - print the contents of a file to standard output, line by line.
+  grep  - print every line in a file that contains a given substring.
+
+Usage examples:
+  newcli cat ./test.txt
+  newcli grep hello ./test.txt
+
+Run "newcli <command> --help" to see the detailed help for any subcommand.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

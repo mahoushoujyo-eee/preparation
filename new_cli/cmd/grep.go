@@ -12,14 +12,28 @@ import (
 
 // grepCmd represents the grep command
 var grepCmd = &cobra.Command{
-	Use:   "grep",
-	Short: "get content which ",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "grep <pattern> <file>",
+	Short: "Print every line in a file that contains the given substring.",
+	Long: `grep scans the given file line by line and prints only those lines that
+contain the supplied pattern as a plain substring. It is a minimal
+re-implementation of the classic Unix "grep" command, intended for
+learning purposes.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Arguments (positional, in order):
+  1. pattern - the substring to search for (no regular expressions yet).
+  2. file    - the path to the file to scan.
+
+Behaviour:
+  - The match is a simple, case-sensitive substring check
+    (strings.Contains), not a regular expression.
+  - Matching lines are printed in the order they appear in the file.
+  - If fewer than two arguments are provided, or the file cannot be
+    opened, the program reports the error and exits with a non-zero
+    status.
+
+Examples:
+  newcli grep hello ./test.txt
+  newcli grep TODO  ./main.go`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := tool.Grep(args)
 		if err != nil {
