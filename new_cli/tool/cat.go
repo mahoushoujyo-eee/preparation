@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 )
 
-func Grep(args []string) error {
-	if len(args) <= 2 {
-		return errors.New("no enough args, usage: grep <pattern> <file>")
+func Cat(args []string) error {
+	if len(args) == 0 {
+		return errors.New("no enough args, usage: cat <file>")
 	}
-	file, err := os.Open(args[2])
+
+	file, err := os.Open(args[0])
 	if err != nil {
 		return err
 	}
@@ -22,9 +22,7 @@ func Grep(args []string) error {
 
 	for scanner.Scan() {
 		tmpRes := scanner.Text()
-		if strings.Contains(tmpRes, args[1]) {
-			fmt.Println(tmpRes)
-		}
+		fmt.Println(tmpRes)
 	}
 	if err := scanner.Err(); err != nil {
 		return err

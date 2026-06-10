@@ -9,10 +9,10 @@ import (
 )
 
 func Grep(args []string) error {
-	if len(args) <= 2 {
+	if len(args) <= 1 {
 		return errors.New("no enough args, usage: grep <pattern> <file>")
 	}
-	file, err := os.Open(args[2])
+	file, err := os.Open(args[1])
 	if err != nil {
 		return err
 	}
@@ -22,7 +22,7 @@ func Grep(args []string) error {
 
 	for scanner.Scan() {
 		tmpRes := scanner.Text()
-		if strings.Contains(tmpRes, args[1]) {
+		if strings.Contains(tmpRes, args[0]) {
 			fmt.Println(tmpRes)
 		}
 	}
