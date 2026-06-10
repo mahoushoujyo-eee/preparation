@@ -22,12 +22,22 @@ It is built as a study project to practice CLI design, file I/O and subcommand
 organization by re-implementing a couple of classic Unix utilities.
 
 Currently supported subcommands:
-  cat   - print the contents of a file to standard output, line by line.
-  grep  - print every line in a file that contains a given substring.
+  cat    - print the contents of a file to standard output, line by line.
+  grep   - print every line in a file that contains a given substring.
+
+Global flags (inherited by every subcommand):
+  --debug      print diagnostic information (parsed args, success markers)
+               before and after a command runs. Off by default.
+  --version    print the version of newcli and exit. The version string is
+               injected at build time via -ldflags; an un-injected build
+               reports its hard-coded fallback value.
+  -h, --help   print help for newcli or any subcommand.
 
 Usage examples:
   newcli cat ./test.txt
   newcli grep hello ./test.txt
+  newcli --debug grep hello ./test.txt
+  newcli --version
 
 Run "newcli <command> --help" to see the detailed help for any subcommand.`,
 	// Uncomment the following line if your bare application
@@ -56,5 +66,6 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable logging")
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false,
+		"print diagnostic information about argument parsing and command execution")
 }

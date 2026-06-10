@@ -32,9 +32,16 @@ Behaviour:
     opened, the program reports the error and exits with a non-zero
     status.
 
+With --debug:
+  - Before opening the file, a log line is printed showing the parsed
+    positional arguments.
+  - After a successful scan, a "command grep run successfully" marker is
+    printed, framed by separator lines.
+
 Examples:
   newcli grep hello ./test.txt
-  newcli grep TODO  ./main.go`,
+  newcli grep TODO  ./main.go
+  newcli --debug grep hello ./test.txt`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if debug {
 			log.Printf("command grep run, args: %v\n---------", args)

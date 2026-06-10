@@ -26,9 +26,16 @@ Behaviour:
   - If the file cannot be opened, or a read error occurs mid-stream, the
     program reports the error and exits with a non-zero status.
 
+With --debug:
+  - Before reading the file, a log line is printed showing the parsed
+    positional arguments.
+  - After a successful read, a "command cat run successfully" marker is
+    printed, framed by separator lines.
+
 Examples:
   newcli cat ./test.txt
-  newcli cat /etc/hosts`,
+  newcli cat /etc/hosts
+  newcli --debug cat ./test.txt`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if debug {
 			log.Printf("command cat run, args: %v\n---------", args)
