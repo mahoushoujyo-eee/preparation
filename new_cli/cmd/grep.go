@@ -4,6 +4,7 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"newcli/tool"
 
@@ -35,9 +36,15 @@ Examples:
   newcli grep hello ./test.txt
   newcli grep TODO  ./main.go`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if debug {
+			log.Printf("command grep run, args: %v\n---------", args)
+		}
 		err := tool.Grep(args)
 		if err != nil {
 			log.Fatalf("execute error: %v", err)
+		} else if debug {
+			fmt.Println("---------")
+			log.Println("command grep run successfully")
 		}
 	},
 }

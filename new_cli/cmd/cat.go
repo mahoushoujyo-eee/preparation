@@ -4,6 +4,7 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"newcli/tool"
 
@@ -29,9 +30,15 @@ Examples:
   newcli cat ./test.txt
   newcli cat /etc/hosts`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if debug {
+			log.Printf("command cat run, args: %v\n---------", args)
+		}
 		err := tool.Cat(args)
 		if err != nil {
 			log.Fatalf("execute error: %v\n", err)
+		} else if debug {
+			fmt.Println("---------")
+			log.Println("command cat run successfully")
 		}
 	},
 }
