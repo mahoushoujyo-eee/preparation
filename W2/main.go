@@ -3,10 +3,16 @@ package main
 import (
 	"fmt"
 	"sync"
+	"w2/weekend"
 	"w2/work"
 )
 
 func main(){
+	weekend.RunHealthCollector()
+}
+
+
+func main2(){
 	go work.RunServer()
 	work.RunClient()
 }
