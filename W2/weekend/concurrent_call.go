@@ -26,7 +26,6 @@ func ConcurrentCall() {
 
 	go func ()  {
 		wg.Wait()
-		close(semaphore)
 		close(res)
 	}()
 
