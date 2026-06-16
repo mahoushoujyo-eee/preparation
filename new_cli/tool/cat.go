@@ -9,7 +9,7 @@ import (
 
 func Cat(args []string) error {
 	if len(args) == 0 {
-		return errors.New("no enough args, usage: cat <file>")
+		return errors.New("not enough args, usage: cat <file>")
 	}
 
 	file, err := os.Open(args[0])

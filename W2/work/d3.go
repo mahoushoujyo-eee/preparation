@@ -68,10 +68,14 @@ func mutexDemo(){
 	var oneRwMutex sync.RWMutex
 
 	oneRwMutex.RLock()
+	oneRwMutex.RUnlock()
+
 	oneRwMutex.Lock()
-	rLock := oneRwMutex.RLocker()
-	rLock.Unlock()
 	oneRwMutex.Unlock()
+
+	rLock := oneRwMutex.RLocker()
+	rLock.Lock()   // 内部是 RLock
+	rLock.Unlock() // 内部是 RUnlock
 }
 
 func WaitGroupDemo(){

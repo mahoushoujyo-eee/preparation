@@ -10,7 +10,7 @@ import (
 
 func Grep(args []string) error {
 	if len(args) <= 1 {
-		return errors.New("no enough args, usage: grep <pattern> <file>")
+		return errors.New("not enough args, usage: grep <pattern> <file>")
 	}
 	file, err := os.Open(args[1])
 	if err != nil {

@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type ServerStatus struct{
-	ServeName string `json:"service"`
+	ServiceName string `json:"service_name"`
 	Status string `json:"status"`
 	StatusCode int `json:"status_code"`
 }
@@ -21,8 +23,21 @@ func RunHealthCollector() {
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		res := CollectHealthStatus()
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(res)
+		bytes, err := json.Marshal(res)
+		if err != nil {
+			log.Printf("marshal failed %v", err)
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write(bytes)
+		if err != nil {
+			log.Printf("write failed %v", err)
+		}
 	})
+
+	mux.Handle("GET /metrics", promhttp.Handler())
 
 	srv := http.Server{
 		Addr: "127.0.0.1:8085",
@@ -48,16 +63,14 @@ func CollectHealthStatus() []ServerStatus{
 	for i := range 10 {
 		wg.Add(1)
 		go func (i int)  {
+			defer wg.Done()
 			semaphore <- struct{}{}
+			defer func() {<-semaphore}()
 			resChan <- ServerStatus{
-				ServeName: fmt.Sprintf("server%d", i),
+				ServiceName: fmt.Sprintf("service %d", i),
 				Status: "healthy",
 				StatusCode: 1,
 			}
-			defer func ()  {
-				wg.Done()
-				<-semaphore
-			}()
 		}(i)
 	}
 

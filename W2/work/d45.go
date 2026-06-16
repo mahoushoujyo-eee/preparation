@@ -24,7 +24,11 @@ func RunServer() {
 		}
 	})
 
-	http.ListenAndServe("127.0.0.1:8085", mux)
+
+	err := http.ListenAndServe("127.0.0.1:8085", mux)
+	if err != nil {
+		log.Fatalf("server start failed, %v", err)
+	}
 }
 
 func RunClient(){
