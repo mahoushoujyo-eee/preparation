@@ -1,1 +1,5 @@
 package dao
+
+func MockDBOp(){
+	
+}
