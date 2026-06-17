@@ -41,13 +41,14 @@ Examples:
   newcli grep hello ./test.txt
   newcli grep TODO  ./main.go
   newcli --debug grep hello ./test.txt`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		mylog.Debug("command grep run, args: %v\n---------", args)
 		err := tool.Grep(args)
 		if err != nil {
-			mylog.Error("execute error: %v", err)
-		} 
+			return err
+		}
 		mylog.Debug("command grep run successfully")
+		return nil
 	},
 }
 

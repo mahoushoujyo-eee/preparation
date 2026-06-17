@@ -7,15 +7,24 @@ import (
 	"sync/atomic"
 )
 
-func mapDemo() {
+func MapDemo() {
 	var syncMap sync.Map
 	syncMap.Store("key1", 11)
 	syncMap.Store("key2", 12)
-	val, ok := syncMap.Load("key1")
-	if ok {
-		val, ok = val.(int)
-		fmt.Println(val)
+
+	raw, ok := syncMap.Load("key1")
+	if !ok {
+		log.Printf("key1 not found")
+		return
 	}
+
+	v, ok := raw.(int)
+	if !ok {
+		log.Printf("key1 is not int, got %T", raw)
+		return
+	}
+
+	log.Println(v)
 }
 
 // consider read write lock:sync.RWMutex
@@ -31,7 +40,7 @@ func (c *Counter) Get() int {
 	return res
 }
 
-func (c *Counter) AddAndGet(val1 int) int{
+func (c *Counter) AddAndGet(val1 int) int {
 	c.mux.Lock()
 	c.val = c.val + val1
 	res := c.val
@@ -49,7 +58,7 @@ type AtomicCounter struct {
 	val atomic.Int64
 }
 
-func (a *AtomicCounter) Get() int64{
+func (a *AtomicCounter) Get() int64 {
 	return a.val.Load()
 }
 
@@ -57,7 +66,7 @@ func (a *AtomicCounter) Inc() {
 	a.val.Add(1)
 }
 
-func mutexDemo(){
+func MutexDemo() {
 	var oneMutex sync.Mutex
 	oneMutex.Lock()
 	if !oneMutex.TryLock() {
@@ -78,13 +87,13 @@ func mutexDemo(){
 	rLock.Unlock() // 内部是 RUnlock
 }
 
-func WaitGroupDemo(){
+func WaitGroupDemo() {
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go func (i int)  {
+		go func(i int) {
 			fmt.Println("go with ", i)
-			defer wg.Done()	
+			defer wg.Done()
 		}(i)
 	}
 
@@ -92,48 +101,50 @@ func WaitGroupDemo(){
 	fmt.Println("all goroutine finish")
 }
 
-var once  sync.Once
-func OnceDemo(){
+var once sync.Once
+
+func OnceDemo() {
 	once.Do(func() {
 		fmt.Println("init once")
 	})
 }
 
-func CondDemo(){
+func CondDemo() {
 	var mut sync.Mutex
 	var oneCond *sync.Cond = sync.NewCond(&mut)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func ()  {
+	ready := false
+	go func() {
 		mut.Lock()
-		oneCond.Wait()
+		for !ready {
+			oneCond.Wait()
+		}
 		mut.Unlock()
 		fmt.Println("do something...")
-		wg.Done()
 	}()
 
-	fmt.Println("signal")
+	mut.Lock()
+	ready = true
+	mut.Unlock()
 	oneCond.Signal()
 
-	wg.Wait()
 	fmt.Println("wg passthrough")
 }
 
 type Buffer struct {
-    Data []byte
-    Pos  int
+	Data []byte
+	Pos  int
 }
 
 var bufferPool *sync.Pool = &sync.Pool{
 	New: func() any {
 		return &Buffer{
 			Data: make([]byte, 1024),
-			Pos: 0,
+			Pos:  0,
 		}
 	},
 }
 
-func PoolDemo(){
+func PoolDemo() {
 	tmpBuffer := bufferPool.Get()
 	buffer, ok := tmpBuffer.(*Buffer)
 	if !ok {
@@ -142,7 +153,7 @@ func PoolDemo(){
 	fmt.Println("buffer pos", buffer.Pos)
 }
 
-func AtomicDemo(){
+func AtomicDemo() {
 	var val atomic.Int64
 	val.Store(2)
 	val.Add(1)

@@ -16,14 +16,14 @@ func RunServer() {
 	})
 
 	mux.HandleFunc("/timeout", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET"{
-			time.Sleep(4*time.Second)
+		if r.Method == "GET" {
+			time.Sleep(4 * time.Second)
 			fmt.Fprintf(w, "4s pass")
-		}else {
+		} else {
+			w.WriteHeader(http.StatusMethodNotAllowed)
 			fmt.Fprintf(w, "method not allowed")
 		}
 	})
-
 
 	err := http.ListenAndServe("127.0.0.1:8085", mux)
 	if err != nil {
@@ -31,15 +31,15 @@ func RunServer() {
 	}
 }
 
-func RunClient(){
+func RunClient() {
 	ctx := context.Background()
-	ctxWtihT, _ := context.WithTimeout(ctx, 3*time.Second)
-	resq, err := http.NewRequestWithContext(ctxWtihT, "GET", "http://127.0.0.1:8085/timeout", nil)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	resq, err := http.NewRequestWithContext(ctxWithTimeout, "GET", "http://127.0.0.1:8085/timeout", nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	client := http.Client{
-	}
+	client := http.Client{}
 	res, err := client.Do(resq)
 	if err != nil {
 		log.Fatalln(err)

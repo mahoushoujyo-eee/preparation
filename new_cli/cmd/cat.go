@@ -35,13 +35,14 @@ Examples:
   newcli cat ./test.txt
   newcli cat /etc/hosts
   newcli --debug cat ./test.txt`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		mylog.Debug("command cat run, args: %v\n---------", args)
 		err := tool.Cat(args)
 		if err != nil {
-			mylog.Error("execute error: %v\n", err)
+			return err
 		}
 		mylog.Debug("command cat run successfully")
+		return nil
 	},
 }
 
