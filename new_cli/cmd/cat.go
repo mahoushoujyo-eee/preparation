@@ -37,7 +37,7 @@ Examples:
   newcli --debug cat ./test.txt`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		mylog.Debug("command cat run, args: %v\n---------", args)
-		err := tool.Cat(args)
+		err := tool.Cat(cmd.OutOrStdout(), args)
 		if err != nil {
 			return err
 		}

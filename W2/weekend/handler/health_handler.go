@@ -2,17 +2,12 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
+	"w2/weekend/entity"
+	"w2/weekend/service"
 )
-
-type ServerStatus struct {
-	ServiceName string `json:"service_name"`
-	Status      string `json:"status"`
-	StatusCode  int    `json:"status_code"`
-}
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	res := collectHealthStatus()
@@ -30,33 +25,22 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func collectHealthStatus() []ServerStatus {
-	res := make([]ServerStatus, 0, 10)
-	resChan := make(chan ServerStatus, 10)
-	semaphore := make(chan struct{}, 3)
+func collectHealthStatus() []entity.ServerStatus {
+	res := make([]entity.ServerStatus, 2, 2)
 	var wg sync.WaitGroup
-	for i := range 10 {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			semaphore <- struct{}{}
-			defer func() { <-semaphore }()
-			resChan <- ServerStatus{
-				ServiceName: fmt.Sprintf("service %d", i),
-				Status:      "healthy",
-				StatusCode:  1,
-			}
-		}(i)
-	}
-
+	wg.Add(1)
 	go func() {
-		wg.Wait()
-		close(resChan)
+		res[0] = service.CheckUserServiceHealth()
+		wg.Done()
 	}()
 
-	for val := range resChan {
-		res = append(res, val)
-	}
+	wg.Add(1)
+	go func() {
+		res[1] = service.CheckQuotableServiceHealth()
+		wg.Done()
+	}()
+
+	wg.Wait()
 
 	return res
 }

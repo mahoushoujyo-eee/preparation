@@ -4,11 +4,13 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
 
-func Grep(args []string) error {
+// Grep在args[1]指定的文件中查找包含args[0]子串的行，写入w
+func Grep(w io.Writer, args []string) error {
 	if len(args) <= 1 {
 		return errors.New("not enough args, usage: grep <pattern> <file>")
 	}
@@ -19,16 +21,11 @@ func Grep(args []string) error {
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-
 	for scanner.Scan() {
-		tmpRes := scanner.Text()
-		if strings.Contains(tmpRes, args[0]) {
-			fmt.Println(tmpRes)
+		line := scanner.Text()
+		if strings.Contains(line, args[0]) {
+			fmt.Fprintln(w, line)
 		}
 	}
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-
-	return nil
+	return scanner.Err()
 }

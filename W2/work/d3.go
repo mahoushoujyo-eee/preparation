@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 func MapDemo() {
@@ -67,19 +68,23 @@ func (a *AtomicCounter) Inc() {
 }
 
 func MutexDemo() {
+	// TryLock：未持锁时尝试获取，成功就用，失败就跳过；不会阻塞。
 	var oneMutex sync.Mutex
-	oneMutex.Lock()
-	if !oneMutex.TryLock() {
-		// do something
+	if oneMutex.TryLock() {
+		defer oneMutex.Unlock()
+		fmt.Println("trylock acquired")
+	} else {
+		fmt.Println("trylock skipped")
 	}
-	oneMutex.Unlock()
 
 	var oneRwMutex sync.RWMutex
 
 	oneRwMutex.RLock()
+	// 只读临界区
 	oneRwMutex.RUnlock()
 
 	oneRwMutex.Lock()
+	// 写临界区
 	oneRwMutex.Unlock()
 
 	rLock := oneRwMutex.RLocker()
@@ -109,26 +114,90 @@ func OnceDemo() {
 	})
 }
 
+// ---- Cond Demo ----
+
+// 之前的例子不仅有bug产生死锁，而且也没有真正用到Cond，只是一种强硬演示
+type BoundedQueue struct {
+	mu       sync.Mutex
+	notFull  *sync.Cond // 队列不满生产者可以Push
+	notEmpty *sync.Cond // 队列非空消费者可以Pop
+	items    []int
+	cap      int
+}
+
+func NewBoundedQueue(cap int) *BoundedQueue {
+	q := &BoundedQueue{cap: cap}
+	q.notFull = sync.NewCond(&q.mu)
+	q.notEmpty = sync.NewCond(&q.mu)
+	return q
+}
+
+func (q *BoundedQueue) Push(v int) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	// 存在假唤醒，比如BroadCast但是没有抢到锁，就要继续wait，所以要for而非if
+	for len(q.items) == q.cap {
+		q.notFull.Wait()
+	}
+
+	q.items = append(q.items, v)
+
+	// Push一次通知一个就行了，所以是Signal
+	q.notEmpty.Signal()
+}
+
+func (q *BoundedQueue) Pop() int {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	for len(q.items) == 0 {
+		q.notEmpty.Wait()
+	}
+
+	v := q.items[0]
+	q.items = q.items[1:]
+	q.notFull.Signal()
+	return v
+}
+
+func (q *BoundedQueue) Len() int {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	return len(q.items)
+}
+
 func CondDemo() {
-	var mut sync.Mutex
-	var oneCond *sync.Cond = sync.NewCond(&mut)
-	ready := false
+	q := NewBoundedQueue(3)
+	var wg sync.WaitGroup
+
+	for id := range 2 {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			for j := range 5 {
+				v := id*100 + j
+				q.Push(v)
+				log.Printf("[P%d] pushed %3d   (len=%d)\n", id, v, q.Len())
+			}
+		}(id)
+	}
+
+	wg.Add(1)
 	go func() {
-		mut.Lock()
-		for !ready {
-			oneCond.Wait()
+		defer wg.Done()
+		for i := 0; i < 10; i++ {
+			time.Sleep(80 * time.Millisecond)
+			v := q.Pop()
+			log.Printf("[C ] popped  %3d   (len=%d)\n", v, q.Len())
 		}
-		mut.Unlock()
-		fmt.Println("do something...")
 	}()
 
-	mut.Lock()
-	ready = true
-	mut.Unlock()
-	oneCond.Signal()
-
-	fmt.Println("wg passthrough")
+	wg.Wait()
+	log.Printf("done")
 }
+
+// ---- Pool Demo ----
 
 type Buffer struct {
 	Data []byte
@@ -145,12 +214,12 @@ var bufferPool *sync.Pool = &sync.Pool{
 }
 
 func PoolDemo() {
-	tmpBuffer := bufferPool.Get()
-	buffer, ok := tmpBuffer.(*Buffer)
-	if !ok {
-		log.Fatalln("this value is not a expected type")
-	}
-	fmt.Println("buffer pos", buffer.Pos)
+	buf := bufferPool.Get().(*Buffer)
+	defer bufferPool.Put(buf)
+
+	buf.Pos = 0
+
+	fmt.Println("buffer pos", buf.Pos)
 }
 
 func AtomicDemo() {
@@ -158,6 +227,11 @@ func AtomicDemo() {
 	val.Store(2)
 	val.Add(1)
 	res := val.Load()
-	fmt.Println(res)
-	val.CompareAndSwap(3, 5)
+	fmt.Println("after store(2)+add(1), val =", res) // 3
+
+	ok := val.CompareAndSwap(3, 5)
+	fmt.Println("cas 3->5:", ok, "now =", val.Load()) // true, 5
+
+	ok = val.CompareAndSwap(3, 7)
+	fmt.Println("cas 3->7:", ok, "now =", val.Load()) // false, 5
 }

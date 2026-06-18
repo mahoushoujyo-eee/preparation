@@ -4,10 +4,12 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 )
 
-func Cat(args []string) error {
+// Cat把args[0]指定的文件逐行写入w
+func Cat(w io.Writer, args []string) error {
 	if len(args) == 0 {
 		return errors.New("not enough args, usage: cat <file>")
 	}
@@ -19,14 +21,8 @@ func Cat(args []string) error {
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-
 	for scanner.Scan() {
-		tmpRes := scanner.Text()
-		fmt.Println(tmpRes)
+		fmt.Fprintln(w, scanner.Text())
 	}
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-
-	return nil
+	return scanner.Err()
 }

@@ -43,7 +43,7 @@ Examples:
   newcli --debug grep hello ./test.txt`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		mylog.Debug("command grep run, args: %v\n---------", args)
-		err := tool.Grep(args)
+		err := tool.Grep(cmd.OutOrStdout(), args)
 		if err != nil {
 			return err
 		}

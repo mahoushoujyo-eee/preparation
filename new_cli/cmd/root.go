@@ -16,9 +16,10 @@ var version = "1.1.1"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:     "newcli",
-	Version: version,
-	Short:   "A small learning-purpose CLI that re-implements basic Unix tools (cat, grep) in Go.",
+	Use:          "newcli",
+	Version:      version,
+	SilenceUsage: true,
+	Short:        "A small learning-purpose CLI that re-implements basic Unix tools (cat, grep) in Go.",
 	Long: `newcli is a minimal command-line toolkit written in Go with the Cobra framework.
 It is built as a study project to practice CLI design, file I/O and subcommand
 organization by re-implementing a couple of classic Unix utilities.
