@@ -1,28 +1,32 @@
 package main
 
 import (
-	"errors"
 	"flag"
-	"mycli/tool"
-	"strings"
+	"log"
 	_ "mycli/init"
+	"mycli/tool"
 )
 
 func main() {
 	args := flag.Args()
 	if len(args) == 0 {
-		panic(errors.New("no args"))
+		log.Fatalln("no args")
 	}
 
-	if strings.Compare(args[0], "cat") == 0 {
+	cmd := args[0]
+
+	switch cmd {
+	case "cat":
 		err := tool.Cat(args)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
-	} else if strings.Compare(args[0], "grep") == 0{
+	case "grep":
 		err := tool.Grep(args)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
+	default:
+		log.Fatalf("unknown command: %s\n", cmd)
 	}
 }

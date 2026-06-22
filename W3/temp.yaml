@@ -1,0 +1,12 @@
+env:                            # ← 走 env 通道
+  - name: LOG_LEVEL
+    valueFrom:
+      configMapKeyRef:
+        name: app-config
+        key: log_level
+envFrom:                        # ← 走 envFrom 通道
+  - configMapRef:
+      name: app-config
+volumeMounts:                   # ← 走文件通道
+  - name: cfg
+    mountPath: /etc/nginx/conf.d

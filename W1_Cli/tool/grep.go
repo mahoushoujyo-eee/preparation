@@ -10,11 +10,11 @@ import (
 
 func Grep(args []string) error {
 	if len(args) <= 2 {
-		return (errors.New("no enough args"))
+		return errors.New("no enough args, usage: grep <pattern> <file>")
 	}
 	file, err := os.Open(args[2])
 	if err != nil {
-		return (fmt.Errorf("path is wrong, %w", err))
+		return err
 	}
 	defer file.Close()
 
@@ -27,7 +27,7 @@ func Grep(args []string) error {
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return (fmt.Errorf("read file failed, %w", err))
+		return err
 	}
 
 	return nil
