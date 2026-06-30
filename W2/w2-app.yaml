@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: w2-deploy
+  labels:
+    app: w2app
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: w2app
+  strategy: 
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0 
+  template:
+    metadata:
+      labels:
+        app: w2app
+    spec:
+      containers:
+        - name: w2app
+          image: w2-app:1.0
+          ports: 
+            - containerPort: 8085
+              name: http
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          #volumeMounts:
+          #  - name: html
+          #    mountPath: /usr/share/nginx/html/index.html
+          #    subPath: index.html
+      #volumes:
+      #  - name: html
+      #    configMap:
+      #      name: nginx-html
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: w2-app-service
+spec:
+  type: NodePort
+  selector:
+    app: w2app
+  ports:
+    - protocol: TCP
+      port: 8085
+      targetPort: http
+      nodePort: 30885
