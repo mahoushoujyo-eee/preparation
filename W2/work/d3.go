@@ -80,11 +80,9 @@ func MutexDemo() {
 	var oneRwMutex sync.RWMutex
 
 	oneRwMutex.RLock()
-	// 只读临界区
 	oneRwMutex.RUnlock()
 
 	oneRwMutex.Lock()
-	// 写临界区
 	oneRwMutex.Unlock()
 
 	rLock := oneRwMutex.RLocker()
