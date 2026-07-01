@@ -21,7 +21,7 @@ func QueryAllUsers() ([]entity.MockUser, error) {
 // 模拟一次探查，比如SELECT 1
 func CheckDBCon() error {
 	time.Sleep(5 * time.Millisecond) // 模拟一点 IO 耗时
-	if rand.Intn(100) < 30 {
+	if rand.Intn(100) < 10 {
 		return errors.New("db connection lost")
 	}
 	return nil

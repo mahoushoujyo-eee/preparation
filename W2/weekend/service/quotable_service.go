@@ -8,14 +8,25 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"w2/weekend/config"
 	"w2/weekend/entity"
 	"w2/weekend/metrics"
 )
 
 var (
-	quotableUrl         string = "https://api.quotable.io/random"
+	defaultQuotableUrl  string = "https://dummyjson.com/quotes/random"
 	quotableServiceName string = "quotable_service"
 )
+
+// quotableURL 优先从配置读取；配置缺失或为空时退回默认值。
+func quotableURL() string {
+	if cfg := config.Get(); cfg != nil {
+		if s, ok := cfg.Services[quotableServiceName]; ok && s.URL != "" {
+			return s.URL
+		}
+	}
+	return defaultQuotableUrl
+}
 
 func CheckQuotableServiceHealth() entity.ServerStatus {
 	start := time.Now()
@@ -41,7 +52,7 @@ func CheckQuotableServiceHealth() entity.ServerStatus {
 
 func GetOneQuotable() (*entity.Quotable, error) {
 	metrics.MockServiceCallTotal.WithLabelValues(quotableServiceName).Inc()
-	body, err := RequestWithTimeout(quotableUrl, "GET")
+	body, err := RequestWithTimeout(quotableURL(), "GET")
 	if err != nil {
 		return nil, err
 	}

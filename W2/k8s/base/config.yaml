@@ -1,0 +1,11 @@
+server:
+  port: 8085
+  read_timeout: 5s
+  write_timeout: 10s
+services:
+  user_service:
+    critical: false
+  quotable_service:
+    url: https://dummyjson.com/quotes/random
+    critical: true
+log_level: info

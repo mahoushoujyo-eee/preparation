@@ -11,7 +11,7 @@ import (
 )
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
-	res := collectHealthStatus()
+	res, statusCode := collectHealthStatus()
 	w.Header().Set("Content-Type", "application/json")
 	bytes, err := json.Marshal(res)
 	if err != nil {
@@ -20,7 +20,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(statusCode)
 	if _, err := w.Write(bytes); err != nil {
 		log.Printf("write failed %v", err)
 	}
@@ -49,7 +49,7 @@ func ConfigCheckHandler(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func collectHealthStatus() []entity.ServerStatus {
+func collectHealthStatus() ([]entity.ServerStatus, int) {
 	res := make([]entity.ServerStatus, 2, 2)
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -66,5 +66,13 @@ func collectHealthStatus() []entity.ServerStatus {
 
 	wg.Wait()
 
-	return res
+	cfg := config.Get()
+	for _, val := range res{
+    critical := cfg != nil && cfg.Services[val.ServiceName].Critical
+		if critical && val.StatusCode != http.StatusOK {
+			return res, http.StatusServiceUnavailable
+		}
+	}
+
+	return res, http.StatusOK
 }

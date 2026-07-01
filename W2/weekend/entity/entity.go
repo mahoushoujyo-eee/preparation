@@ -13,6 +13,6 @@ type MockUser struct {
 }
 
 type Quotable struct {
-	Content string `json:"content"`
+	Content string `json:"quote"`
 	Author  string `json:"author"`
 }
